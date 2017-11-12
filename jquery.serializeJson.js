@@ -13,9 +13,7 @@
 
     //filter single data
     var singleParse = function (singleJson) {
-        var serializeObj = [];
-        var singleKey = '';
-        var jsonTemp = {};
+        var serializeObj = [], singleKey = '', jsonTemp = {};
         for(var i = 0; i < singleJson.length; i ++){
             var target = singleJson[i];
             var dotIndex = target.name.indexOf('.');
@@ -39,11 +37,7 @@
 
     //filter multiple data
     var multipleParse = function (multipleJson) {
-        var serializeObj = [];
-        var multipleKey = '';
-        var jsonTemp = {};
-        var serializeTemp = [];
-        var preIndex = '0';
+        var serializeObj = [], multipleKey = '', jsonTemp = {}, serializeTemp = [], preIndex = '0';
         for(var i = 0; i < multipleJson.length; i ++){
             var target = multipleJson[i];
             var dotIndex = target.name.indexOf('.');
@@ -96,18 +90,23 @@
      * jQuery 扩展，将复杂form表单转成json对象
      */
     $.fn.serializeJson = function(){
-        var serializeObj = {};
-        var singleTemp = [];
-        var multipleTemp = [];
+        var serializeObj = {},singleTemp = [],multipleTemp = [],sortArr = [];
         $(this.serializeArray()).each(function() {
             var target = this;
             if (target.value.length !== 0 && target.name.length !== 0) {
                 var dotIndex = target.name.indexOf('.');
                 if (dotIndex !== -1) {
+                    var objName = target.name.substring(0,dotIndex);
+                    if($.inArray(objName,sortArr) === -1){
+                      sortArr.push(objName);
+                    }
                     var leftIndex = target.name.indexOf('[');
                     if (leftIndex !== -1){
+                        target['sortcols'] = $.inArray(objName,sortArr);
                         multipleTemp.push(target);
                     } else {
+                        //add sort column
+                        target['sortcols'] = $.inArray(objName,sortArr);
                         singleTemp.push(target);
                     }
                 } else {
@@ -115,8 +114,18 @@
                 }
             }
         });
-        singleTemp.length > 0 ? singleTemp.push({name:'lastName',value:'lastValueTest'}) : '';
-        multipleTemp.length > 0 ? multipleTemp.push({name:'lastName',value:'lastValueTest'}) : '';
+        if(singleTemp.length > 0){
+          singleTemp.sort(function(a,b) {
+            return a.sortcols - b.sortcols;
+          });
+          singleTemp.push({name:'lastName',value:'lastValueTest'})
+        }
+        if(multipleTemp.length > 0){
+          multipleTemp.sort(function(a,b) {
+            return a.sortcols - b.sortcols;
+          });
+          multipleTemp.push({name:'lastName',value:'lastValueTest'})
+        }
         return mergeJsonObj(serializeObj,singleParse(singleTemp),multipleParse(multipleTemp));
     };
 
