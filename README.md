@@ -7,7 +7,7 @@ jQuery 扩展，将复杂form表单转成json对象
 * import <script src="jquery.serializeJson.js"></script>
 
 ``` javascript
-$('#demoForm').serializeJson();
+var josnObj = $('#demoForm').serializeJson();
 
 ```
 
