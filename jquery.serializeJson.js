@@ -5,7 +5,7 @@
  *
  * @author  : ulongx
  * @doc     : https://github.com/ulongx/serializeJson
- * @version : 0.1.0
+ * @version : 0.1.1
  *
  */
 !(function($){
@@ -73,6 +73,28 @@
         }
         return serializeObj;
     };
+    
+    var singleArrParse = function(singleArr){
+        var serializeObj = [], singleKey = '', arryTemp = [];
+        for(var i = 0; i < singleArr.length; i ++){
+            var target = singleArr[i];
+            var dotIndex = target.name.indexOf('[');
+            var singleKeyTemp = target.name.substring(0,dotIndex);
+            if (singleKey === singleKeyTemp){
+                arryTemp.push(target.value);
+            } else {
+                if (singleKey !== ''){
+                    var temp = {};
+                    temp[singleKey] = arryTemp;
+                    serializeObj.push(temp);
+                    arryTemp = [];
+                }
+                singleKey = singleKeyTemp;
+                arryTemp.push(target.value);
+            }
+        }
+        return serializeObj;
+    }
 
     /*数据合并*/
     var mergeJsonObj = function (generalJosn,singleJson,multipleJson) {
@@ -90,7 +112,7 @@
      * jQuery 扩展，将复杂form表单转成json对象
      */
     $.fn.serializeJson = function(){
-        var serializeObj = {},singleTemp = [],multipleTemp = [],sortArr = [];
+        var serializeObj = {},singleTemp = [],multipleTemp = [],sortArr = [],singleArrTemp=[];
         $(this.serializeArray()).each(function() {
             var target = this;
             if (target.value.length !== 0 && target.name.length !== 0) {
@@ -110,22 +132,36 @@
                         singleTemp.push(target);
                     }
                 } else {
-                    serializeObj[target.name]=target.value;
+                    var leftIndex = target.name.indexOf('[');
+                    if(leftIndex !== -1){
+                        target['sortcols'] = $.inArray(objName,sortArr);
+                        singleArrTemp.push(target);
+                    } else{
+                        serializeObj[target.name]=target.value;
+                    }
+                    
                 }
             }
         });
         if(singleTemp.length > 0){
-          singleTemp.sort(function(a,b) {
+            singleTemp.sort(function(a,b) {
             return a.sortcols - b.sortcols;
-          });
-          singleTemp.push({name:'lastName',value:'lastValueTest'})
+            });
+            singleTemp.push({name:'lastName',value:'lastValueTest'})
         }
         if(multipleTemp.length > 0){
-          multipleTemp.sort(function(a,b) {
+            multipleTemp.sort(function(a,b) {
             return a.sortcols - b.sortcols;
-          });
-          multipleTemp.push({name:'lastName',value:'lastValueTest'})
+            });
+            multipleTemp.push({name:'lastName',value:'lastValueTest'})
         }
+        if(singleArrTemp.length > 0){
+            singleArrTemp.sort(function(a,b) {
+                return a.sortcols - b.sortcols;
+            });
+            singleArrTemp.push({name:'lastName',value:'lastValueTest'})
+        }
+        console.log(singleArrParse(singleArrTemp));
         return mergeJsonObj(serializeObj,singleParse(singleTemp),multipleParse(multipleTemp));
     };
 

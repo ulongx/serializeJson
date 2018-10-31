@@ -20,6 +20,9 @@ var josnObj = $('#demoForm').serializeJson();
 
 如果测试到bug请创建issuse，谢谢
 
+## 2018/10/31 
+添加获取arr对象支持
+
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)
